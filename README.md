@@ -25,7 +25,7 @@ Key features:
 Pick the language of your choice below. Each folder contains a runnable sample and
 its own README with step-by-step instructions.
 
-- [cURL sample](clients/v1/curl/)
+- [CURL sample](clients/v1/curl/)
 - [Python sample](clients/v1/python/)
 - [C# sample](clients/v1/csharp/)
 - [JavaScript (Node.js) sample](clients/v1/javascript/)
