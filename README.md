@@ -16,7 +16,7 @@ Key features:
 - Ready-to-run sample code for **CURL, Python, C#, JavaScript (Node.js)** and **PHP**,
   plus a standalone **browser demo**.
 
-> Get your API Key from the developer portal at `[https://www.autodwg.com/api/portal/](https://www.autodwg.com/api/portal/)`.
+> Get your API Key from the developer portal at [https://www.autodwg.com/api/portal/](https://www.autodwg.com/api/portal/).
 
 <br>
 
