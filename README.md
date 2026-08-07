@@ -2,7 +2,7 @@
 
 ## About
 
-The **AutoDWG Conversion API** is a REST-based service that converts **DWG / DXF** CAD
+The **[AutoDWG Conversion API](https://www.autodwg.com/developers/conversion-api.html)** is a REST-based service that converts **DWG / DXF** CAD
 files to **PDF, SVG and DXF**, and converts **PDF** back to **DWG / DXF**. It is
 designed to be called from any programming language or platform over plain HTTPS.
 
