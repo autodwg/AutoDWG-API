@@ -13,7 +13,7 @@ Key features:
 - Simple API-Key authentication (`x-api-key` header).
 - Asynchronous conversion with task polling — suitable for large files.
 - Monthly quota / usage metering per subscription.
-- Ready-to-run sample code for **cURL, Python, C#, JavaScript (Node.js)** and **PHP**,
+- Ready-to-run sample code for **CURL, Python, C#, JavaScript (Node.js)** and **PHP**,
   plus a standalone **browser demo**.
 
 > Get your API Key from the developer portal at `https://www.autodwg.com/api/portal/`.
