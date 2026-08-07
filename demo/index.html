@@ -1,0 +1,317 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AutoDWG Conversion API — Test Console</title>
+  <style>
+    :root { --brand:#0b63c4; --brand-d:#0a56aa; --bg:#f4f6f9; --border:#d5dae2;
+            --ok:#1a9c54; --err:#c0392b; --ink:#1c2733; --muted:#5a6a7a; }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:2rem 1rem; background:var(--bg); color:var(--ink);
+           font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif; }
+    .wrap { max-width:860px; margin:0 auto; }
+    h1 { font-size:1.5rem; margin:0 0 .2rem; }
+    p.sub { margin:0 0 1.5rem; color:var(--muted); font-size:.92rem; }
+    .card { background:#fff; border:1px solid var(--border); border-radius:10px;
+            padding:1.4rem 1.6rem; margin-bottom:1rem; box-shadow:0 2px 10px rgba(0,0,0,.04); }
+    .card h2 { font-size:1.05rem; margin:0 0 1rem; display:flex; align-items:center; gap:.5rem; }
+    .tag { font-size:.68rem; font-weight:700; letter-spacing:.03em; color:#fff;
+           background:var(--brand); padding:.15rem .5rem; border-radius:999px; }
+    .path { font-size:.78rem; font-weight:500; color:var(--muted); font-family:ui-monospace,Consolas,monospace; }
+
+    /* Collapsible endpoint panels ----------------------------------- */
+    details.panel { background:#fff; border:1px solid var(--border); border-radius:10px;
+                    margin-bottom:.75rem; box-shadow:0 2px 10px rgba(0,0,0,.04); overflow:hidden; }
+    details.panel > summary { list-style:none; cursor:pointer; user-select:none;
+        display:flex; align-items:center; gap:.5rem; padding:.9rem 1.2rem; font-size:1rem; font-weight:600; }
+    details.panel > summary::-webkit-details-marker { display:none; }
+    details.panel > summary .chev { margin-left:auto; color:#9aa7b4; transition:transform .2s; font-size:.8rem; }
+    details.panel[open] > summary .chev { transform:rotate(90deg); }
+    details.panel[open] > summary { border-bottom:1px solid var(--border); }
+    .panel-body { padding:1rem 1.2rem 1.3rem; }
+
+    label { display:block; font-weight:600; margin:.85rem 0 .3rem; font-size:.86rem; }
+    label:first-child { margin-top:0; }
+    input[type=text],input[type=password],select,input[type=file] {
+      width:100%; padding:.55rem .65rem; border:1px solid var(--border);
+      border-radius:6px; font-size:.9rem; background:#fff; }
+    .row { display:flex; gap:1rem; } .row > div { flex:1; }
+    button { margin-top:1rem; padding:.62rem 1.1rem; background:var(--brand); color:#fff;
+             border:0; border-radius:6px; font-size:.92rem; font-weight:600; cursor:pointer; }
+    button:hover { background:var(--brand-d); }
+    button:disabled { opacity:.55; cursor:not-allowed; }
+    button.sec { background:#eef2f7; color:var(--brand); }
+    button.sec:hover { background:#e2e9f2; }
+    .btnrow { display:flex; gap:.6rem; flex-wrap:wrap; }
+    .bar { height:8px; background:#e5eaf0; border-radius:5px; overflow:hidden; margin-top:1rem; }
+    .bar > span { display:block; height:100%; width:0; background:var(--brand); transition:width .3s; }
+    a.result { display:none; margin-top:1rem; text-align:center; padding:.6rem;
+      background:#e8f3ff; border:1px solid #b9d8ff; border-radius:6px;
+      color:var(--brand); font-weight:600; text-decoration:none; }
+    small.hint { color:#7a8794; font-weight:400; }
+    .console { background:#0f1720; color:#d6e2ee; border-radius:8px; padding:1rem 1.1rem;
+      font-family:ui-monospace,Consolas,monospace; font-size:.8rem; white-space:pre-wrap;
+      word-break:break-word; min-height:6rem; max-height:26rem; overflow-y:auto; margin-top:.4rem; }
+    .console .u { color:#7fb2ff; } .console .ok { color:#5fd28a; } .console .er { color:#ff8a80; }
+    .console .d { color:#8b98a6; }
+    .clearbtn { margin-left:auto; font-size:.75rem; background:none; color:#8b98a6; padding:0; border:0; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>AutoDWG Conversion API — Test Console</h1>
+    <p class="sub">Exercise the <b>Convert</b>, <b>Subscription</b> and <b>Task</b> endpoints directly from the browser. Click a panel to expand it.</p>
+
+    <!-- Connection (always visible) ------------------------------------ -->
+    <div class="card">
+      <h2>Connection</h2>
+      <label for="baseUrl">API base URL <small class="hint">(must include <code>/api</code>)</small></label>
+      <input id="baseUrl" type="text" value="https://www.autodwg.com/api" />
+      <label for="apiKey">API key <small class="hint">(sent as the <code>x-api-key</code> header)</small></label>
+      <input id="apiKey" type="password" placeholder="YOUR_API_KEY" />
+      <small class="hint">Both values are remembered in this browser only (localStorage).</small>
+    </div>
+
+    <!-- Subscription --------------------------------------------------- -->
+    <details class="panel">
+      <summary><span class="tag">GET</span> Subscription <span class="path">/v1/subscription</span><span class="chev">&#9654;</span></summary>
+      <div class="panel-body">
+        <p class="sub" style="margin:0 0 .3rem;">Simplest authenticated call — use it first to confirm the key and endpoint work.</p>
+        <button id="subBtn">Get subscription</button>
+      </div>
+    </details>
+
+    <!-- Convert -------------------------------------------------------- -->
+    <details class="panel">
+      <summary><span class="tag">POST</span> Convert <span class="path">/v1/convert</span><span class="chev">&#9654;</span></summary>
+      <div class="panel-body">
+        <div class="row">
+          <div>
+            <label for="file">Input file <small class="hint">(.dwg / .dxf / .pdf)</small></label>
+            <input id="file" type="file" accept=".dwg,.dxf,.pdf" />
+          </div>
+          <div>
+            <label for="format">Output format</label>
+            <select id="format">
+              <option value="pdf">pdf (from DWG/DXF)</option>
+              <option value="svg">svg (from DWG/DXF)</option>
+              <option value="dxf">dxf (from DWG/DXF, or from PDF)</option>
+              <option value="dwg">dwg (from PDF)</option>
+            </select>
+          </div>
+        </div>
+        <div class="btnrow">
+          <button id="convBtn">Submit conversion</button>
+          <button id="convFlowBtn" class="sec">Submit + poll + download</button>
+        </div>
+        <div class="bar"><span id="barFill"></span></div>
+        <a class="result" id="download" download>Download result (manual)</a>
+      </div>
+    </details>
+
+    <!-- Task ----------------------------------------------------------- -->
+    <details class="panel">
+      <summary><span class="tag">GET</span> Task <span class="path">/v1/tasks/{id}</span><span class="chev">&#9654;</span></summary>
+      <div class="panel-body">
+        <label for="taskId">Task ID</label>
+        <input id="taskId" type="text" placeholder="e.g. 12345" />
+        <div class="btnrow">
+          <button id="statusBtn">Check status</button>
+          <button id="dlBtn" class="sec">Download result</button>
+        </div>
+        <div class="bar"><span id="barFill2"></span></div>
+      </div>
+    </details>
+
+    <!-- Console -------------------------------------------------------- -->
+    <div class="card">
+      <h2>Response console <button class="clearbtn" id="clearBtn">clear</button></h2>
+      <div class="console" id="log">Ready.</div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const logEl = $('log'), barEl = $('barFill'), dlEl = $('download');
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+    // ---- persistence -------------------------------------------------
+    for (const id of ['baseUrl', 'apiKey']) {
+      const saved = localStorage.getItem('autodwg.' + id);
+      if (saved) $(id).value = saved;
+      $(id).addEventListener('change', () => localStorage.setItem('autodwg.' + id, $(id).value));
+    }
+
+    // ---- logging helpers ---------------------------------------------
+    function esc(s) { return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+    function line(html) { logEl.innerHTML += '\n' + html; logEl.scrollTop = logEl.scrollHeight; }
+    // Overwrite the last console line (used for live download progress).
+    function replaceLine(html) {
+      const parts = logEl.innerHTML.split('\n');
+      parts[parts.length - 1] = html;
+      logEl.innerHTML = parts.join('\n');
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+    function logReq(method, url) { line('<span class="u">→ ' + method + ' ' + esc(url) + '</span>'); }
+    function logStatus(ok, status, statusText) {
+      line('<span class="' + (ok ? 'ok' : 'er') + '">← ' + status + ' ' + esc(statusText || '') + '</span>');
+    }
+    function logBody(obj) { line('<span class="d">' + esc(typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2)) + '</span>'); }
+    function logErr(msg) { line('<span class="er">✗ ' + esc(msg) + '</span>'); }
+    function setProgress(p) { const v = (p || 0) + '%'; barEl.style.width = v; $('barFill2').style.width = v; }
+    function kb(n) { return (n / 1024 | 0) + ' KB'; }
+
+    function ctx() {
+      const base = $('baseUrl').value.trim().replace(/\/+$/, '');
+      const key = $('apiKey').value.trim();
+      if (!base) { alert('Please enter the API base URL.'); return null; }
+      if (!key) { alert('Please enter your API key.'); return null; }
+      return { base, key };
+    }
+
+    // Generic JSON call: logs request, status and parsed body. Returns
+    // { resp, body } or null on network/CORS failure (which is logged).
+    async function callJson(method, url, key, formBody) {
+      logReq(method, url);
+      try {
+        const opts = { method, headers: { 'x-api-key': key } };
+        if (formBody) opts.body = formBody; // FormData sets its own content-type
+        const resp = await fetch(url, opts);
+        const text = await resp.text();
+        let body; try { body = JSON.parse(text); } catch { body = text; }
+        logStatus(resp.ok, resp.status, resp.statusText);
+        if (body !== '' && body !== undefined) logBody(body);
+        return { resp, body };
+      } catch (e) {
+        // fetch() rejects on network errors and blocked CORS preflight.
+        logErr('Network/CORS error: ' + e.message +
+               '  (a 404/blocked OPTIONS preflight shows up here — check the API deployment and CORS.)');
+        return null;
+      }
+    }
+
+    // ---- Subscription ------------------------------------------------
+    async function getSubscription() {
+      const c = ctx(); if (!c) return;
+      await callJson('GET', c.base + '/v1/subscription', c.key);
+    }
+
+    // ---- Convert (submit only) ---------------------------------------
+    async function submitConvert() {
+      const c = ctx(); if (!c) return null;
+      const file = $('file').files[0];
+      if (!file) { alert('Please choose a file to convert.'); return null; }
+      const form = new FormData();
+      form.append('file', file);
+      form.append('output_format', $('format').value);
+      line('<span class="d">uploading ' + esc(file.name) + ' (' + kb(file.size) + ', output_format=' + $('format').value + ')</span>');
+      const r = await callJson('POST', c.base + '/v1/convert', c.key, form);
+      if (r && r.resp.status === 202 && r.body && r.body.task_id != null) {
+        $('taskId').value = r.body.task_id; // hand off to the Task panel
+        line('<span class="ok">task_id ' + r.body.task_id + ' copied to the Task panel.</span>');
+        return r.body.task_id;
+      }
+      return null;
+    }
+
+    // ---- Task status / download --------------------------------------
+    async function checkStatus() {
+      const c = ctx(); if (!c) return null;
+      const id = $('taskId').value.trim();
+      if (!id) { alert('Please enter a task ID.'); return null; }
+      const r = await callJson('GET', c.base + '/v1/tasks/' + encodeURIComponent(id), c.key);
+      if (r && r.body && typeof r.body.progress === 'number') setProgress(r.body.progress);
+      return r && r.body ? r.body : null;
+    }
+
+    async function downloadResult() {
+      const c = ctx(); if (!c) return;
+      const id = $('taskId').value.trim();
+      if (!id) { alert('Please enter a task ID.'); return; }
+      const url = c.base + '/v1/tasks/' + encodeURIComponent(id) + '/download';
+      logReq('GET', url);
+      try {
+        const resp = await fetch(url, { headers: { 'x-api-key': c.key } });
+        logStatus(resp.ok, resp.status, resp.statusText);
+        if (!resp.ok) { logBody(await resp.text().catch(() => '')); return; }
+
+        const total = parseInt(resp.headers.get('content-length') || '0', 10);
+        const cd = resp.headers.get('content-disposition') || '';
+        const m = cd.match(/filename\*?=(?:UTF-8''|")?([^";]+)/i);
+        const fname = m ? decodeURIComponent(m[1].trim()) : ('result-' + id);
+
+        // The 200 above is only the response headers; the file body still has to
+        // transfer. Stream it so the user sees live progress instead of a freeze.
+        let blob;
+        if (resp.body && resp.body.getReader) {
+          line('<span class="d">receiving ' + esc(fname) + (total ? ' / ' + kb(total) : '') + ' ...</span>');
+          const reader = resp.body.getReader();
+          const chunks = []; let received = 0; const t0 = Date.now();
+          for (;;) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            chunks.push(value); received += value.length;
+            if (total) setProgress(Math.round(received / total * 100));
+            replaceLine('<span class="d">receiving ' + esc(fname) + ': ' + kb(received) +
+                        (total ? ' / ' + kb(total) : '') + ' ...</span>');
+          }
+          setProgress(100);
+          blob = new Blob(chunks);
+          const secs = ((Date.now() - t0) / 1000).toFixed(1);
+          replaceLine('<span class="d">received ' + esc(fname) + ': ' + kb(blob.size) + ' in ' + secs + 's</span>');
+        } else {
+          line('<span class="d">receiving ' + esc(fname) + ' ...</span>');
+          blob = await resp.blob();
+          setProgress(100);
+        }
+
+        const objUrl = URL.createObjectURL(blob);
+        // Auto-trigger the download (the visible link sits inside the possibly
+        // collapsed Convert panel), then also expose it as a manual fallback.
+        const a = document.createElement('a');
+        a.href = objUrl; a.download = fname;
+        document.body.appendChild(a); a.click(); a.remove();
+        dlEl.href = objUrl; dlEl.download = fname; dlEl.style.display = 'block';
+        setTimeout(() => URL.revokeObjectURL(objUrl), 60000);
+        line('<span class="ok">downloaded ' + esc(fname) + ' (' + kb(blob.size) + '). If the browser blocked it, use the "Download result (manual)" link in the Convert panel.</span>');
+      } catch (e) {
+        logErr('Network/CORS error: ' + e.message);
+      }
+    }
+
+    // ---- Full flow: submit -> poll -> download -----------------------
+    async function fullFlow() {
+      dlEl.style.display = 'none';
+      setProgress(0);
+      const id = await submitConvert();
+      if (id == null) return;
+      for (;;) {
+        await sleep(2000);
+        const s = await checkStatus();
+        if (!s || !s.status) { logErr('Stopped polling (no status returned).'); return; }
+        if (s.status === 'Success') break;
+        if (s.status === 'Failed') {
+          logErr('Conversion failed: ' + (s.error_code || '') + ' - ' + (s.error_message || ''));
+          return;
+        }
+      }
+      await downloadResult();
+    }
+
+    // ---- wire up ------------------------------------------------------
+    $('subBtn').addEventListener('click', () => run($('subBtn'), getSubscription));
+    $('convBtn').addEventListener('click', () => run($('convBtn'), submitConvert));
+    $('convFlowBtn').addEventListener('click', () => run($('convFlowBtn'), fullFlow));
+    $('statusBtn').addEventListener('click', () => run($('statusBtn'), checkStatus));
+    $('dlBtn').addEventListener('click', () => run($('dlBtn'), downloadResult));
+    $('clearBtn').addEventListener('click', (e) => { e.preventDefault(); logEl.textContent = 'Ready.'; });
+
+    // Disable the clicked button while its action runs.
+    async function run(btn, fn) {
+      btn.disabled = true;
+      try { await fn(); } finally { btn.disabled = false; }
+    }
+  </script>
+</body>
+</html>
