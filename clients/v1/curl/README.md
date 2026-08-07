@@ -1,4 +1,4 @@
-# cURL sample — AutoDWG Conversion API
+# CURL sample — AutoDWG Conversion API
 
 A small Bash script that runs the full convert → poll → download flow using
 `curl` and `jq`.
